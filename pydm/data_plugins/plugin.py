@@ -5,10 +5,21 @@ import threading
 from numpy import ndarray
 from typing import Optional, Callable
 
+from ..data_store import DataStore, DataKeys, DEFAULT_INTROSPECTION
 from ..utilities.remove_protocol import protocol_and_address
 from qtpy.QtCore import Signal, QObject, Qt
 from qtpy.QtWidgets import QApplication
 from .. import config
+
+
+def safe_disconnect_signal(signal, slot):
+    try:
+        if slot is not None:
+            signal.disconnect(slot)
+        else:
+            signal.disconnect()
+    except TypeError:
+        pass
 
 
 class PyDMConnection(QObject):
@@ -21,6 +32,7 @@ class PyDMConnection(QObject):
     prec_signal = Signal(int)
     upper_ctrl_limit_signal = Signal([float], [int])
     lower_ctrl_limit_signal = Signal([float], [int])
+    notify = Signal()  # Emitted when any type of PV update is available
 
     def __init__(self, channel, address, protocol=None, parent=None):
         super(PyDMConnection, self).__init__(parent)
@@ -28,6 +40,10 @@ class PyDMConnection(QObject):
         self.address = address
         self.connected = False
         self.value = None
+        self.data = {}
+        self.introspection = DEFAULT_INTROSPECTION
+        self.channel = channel
+        self.connection = self.channel._connection
         self.listener_count = 0
         self.app = QApplication.instance()
 
@@ -78,6 +94,13 @@ class PyDMConnection(QObject):
 
         if channel.prec_slot is not None:
             self.prec_signal.connect(channel.prec_slot, Qt.QueuedConnection)
+
+        if channel.notifed is not None:
+            self.notify.connect(channel.notified, Qt.QueuedConnection)
+            # TODO: Do the put here too (channel.transmit)
+
+        self.send_to_channel()
+
 
     def remove_listener(self, channel, destroying: Optional[bool] = False) -> None:
         """
@@ -164,6 +187,9 @@ class PyDMConnection(QObject):
             except (KeyError, TypeError):
                 pass
 
+        safe_disconnect_signal(self.notify, channel.notifed)
+        # TODO: Also the put
+
         self.listener_count = self.listener_count - 1
         if self.listener_count < 1:
             self.close()
@@ -186,8 +212,14 @@ class PyDMConnection(QObject):
         # handle the disconnect for us
         return False
 
+    def send_to_channel(self):
+        self.introspection.get(DataKeys.CONNECTION, 'CONNECTION')
+        self.connected = self.data.get('CONNECTION', False)
+        DataStore[self.address] = (self.data, self.introspection)
+        self.notify.emit()
+
     def close(self):
-        pass
+        DataStore.remove(self.address)
 
 
 class PyDMPlugin(object):

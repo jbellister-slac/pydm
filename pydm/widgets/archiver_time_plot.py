@@ -10,6 +10,9 @@ from pydm.widgets import PyDMTimePlot
 from qtpy.QtCore import QObject, QTimer, Property, Signal, Slot
 from qtpy.QtGui import QColor
 
+from ..data_store import DataKeys
+from ..utilities import data_callback
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -72,6 +75,12 @@ class ArchivePlotCurveItem(TimePlotCurveItem):
         self.archive_channel = PyDMChannel(address=archive_address,
                                            value_slot=self.receiveArchiveData,
                                            value_signal=self.archive_data_request_signal)
+
+    def _receive_data(self, data=None, introspection=None, *args, **kwargs):
+        if data is None or introspection is None:
+            return
+
+        data_callback(self, data, introspection, {DataKeys.VALUE: 'receiveArchiveData'})
 
     @Slot(np.ndarray)
     def receiveArchiveData(self, data: np.ndarray) -> None:

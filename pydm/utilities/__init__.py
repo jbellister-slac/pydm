@@ -1,10 +1,12 @@
 import os
+import re
 import sys
 import logging
 import platform
 import ntpath
 import shlex
 
+from typing import Dict
 from qtpy import QtWidgets, QtCore
 
 from .units import find_unittype, convert, find_unit_options
@@ -342,6 +344,63 @@ def which(cmd, mode=os.F_OK | os.X_OK, path=None, pathext=None, extra_path=None)
                 if _access_check(name, mode):
                     return name
     return None
+
+
+def nested_dict_get(input_dict, nested_key):
+    internal_dict_value = input_dict
+    for k in nested_key:
+        try:
+            result = list(filter(None, re.split("(\[.+])", k)))
+            if len(result) > 1:
+                internal_dict_value = internal_dict_value.get(result[0], None)
+                internal_dict_value = eval(
+                    "internal_dict_value{}".format(''.join(result[1:]))
+                )
+            else:
+                internal_dict_value = internal_dict_value.get(k, None)
+        except:
+            internal_dict_value = None
+        if internal_dict_value is None:
+            return None
+    return internal_dict_value
+
+
+def data_callback(widget: QtWidgets.QWidget, data: Dict, introspection: Dict, mapping: Dict):
+    """
+    This callback executes the methods mapped at `mapping` with the data
+    from the channel following the introspection definition.
+    Parameters
+    ----------
+    widget : QWidget
+        The widget being affected by this callback
+    data : dict
+        Data from the channel
+    introspection : dict
+        Mapping between DataKey and plugin data fields
+    mapping : dict
+        Map containing the relation between DataKey and method for widget
+    """
+    if data is None:
+        return
+    try:
+        for data_key, method_name in mapping.items():
+            if isinstance(method_name, str):
+                method = getattr(widget, method_name, None)
+            elif callable(method_name):
+                method = method_name
+            else:
+                method = None
+            if not method:
+                continue
+            real_key = introspection.get(data_key)
+            if real_key is None:
+                continue
+            new_value = nested_dict_get(data, real_key.split('.'))
+            if new_value is not None:
+                method(new_value)
+    except RuntimeError:
+        # We should bail out as the widget is destroyed.
+        pass
 
 
 def only_main_thread(func):

@@ -95,9 +95,13 @@ class PyDMConnection(QObject):
         if channel.prec_slot is not None:
             self.prec_signal.connect(channel.prec_slot, Qt.QueuedConnection)
 
-        if channel.notifed is not None:
-            self.notify.connect(channel.notified, Qt.QueuedConnection)
+        try:
+            if channel.notified is not None:
+                self.notify.connect(channel.notified, Qt.QueuedConnection)
+                print(f'Successfully connected to the notified slot for channel: {channel.address}')
             # TODO: Do the put here too (channel.transmit)
+        except AttributeError:
+            print('Channel has no notified slot')
 
         self.send_to_channel()
 
@@ -215,11 +219,11 @@ class PyDMConnection(QObject):
     def send_to_channel(self):
         self.introspection.get(DataKeys.CONNECTION, 'CONNECTION')
         self.connected = self.data.get('CONNECTION', False)
-        DataStore[self.address] = (self.data, self.introspection)
+        DataStore[self.channel.address] = (self.data, self.introspection)
         self.notify.emit()
 
     def close(self):
-        DataStore.remove(self.address)
+        DataStore.remove(self.channel.address)
 
 
 class PyDMPlugin(object):

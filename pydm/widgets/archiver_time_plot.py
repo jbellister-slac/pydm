@@ -73,10 +73,11 @@ class ArchivePlotCurveItem(TimePlotCurveItem):
             archive_address = archiver_prefix + address
 
         self.archive_channel = PyDMChannel(address=archive_address,
-                                           value_slot=self.receiveArchiveData,
+                                           callback=self._receive_data,
                                            value_signal=self.archive_data_request_signal)
 
-    def _receive_data(self, data=None, introspection=None, *args, **kwargs):
+    def _receive_data(self, data=None, introspection=None):
+        print(f'We have received the introspection: {introspection}')
         if data is None or introspection is None:
             return
 

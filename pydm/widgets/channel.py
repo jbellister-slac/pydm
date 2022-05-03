@@ -124,8 +124,8 @@ class PyDMChannel(object):
         if any([x is not None for x in slots.values()]):
             default_cb = self._make_callback(slots)
             self.subscribe(default_cb)
-
-    @Slot()
+            
+    # TODO: Can only use Slot() if this is defined on a QObject (not object
     def notified(self):
         if self._busy:
             return
@@ -175,18 +175,19 @@ class PyDMChannel(object):
 
     def get_introspection(self):
         if self._use_introspection:
-            return DataStore.introspect(self.address)
+            return DataStore.introspect(self._address)
         return self._introspection
 
     def get_with_introspection(self):
-        data, intro = DataStore.fetch_with_introspection(self.address)
+        print(f'Attempting to pull data out with the key: {self._address}')
+        data, intro = DataStore.fetch_with_introspection(self._address)
         # In case of user-defined introspection for inner fields
         if not self._use_introspection:
             intro = self._introspection
         return data, intro
 
     def get(self):
-        data = DataStore.fetch(self.address)
+        data = DataStore.fetch(self._address)
         return data
 
     def subscribe(self, callback):

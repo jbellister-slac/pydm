@@ -191,7 +191,7 @@ class PyDMConnection(QObject):
             except (KeyError, TypeError):
                 pass
 
-        safe_disconnect_signal(self.notify, channel.notifed)
+        safe_disconnect_signal(self.notify, channel.notified)
         # TODO: Also the put
 
         self.listener_count = self.listener_count - 1
@@ -247,7 +247,7 @@ class PyDMPlugin(object):
     def add_connection(self, channel):
         from pydm.utilities import is_qt_designer
         with self.lock:
-            connection_id = self.get_connection_id(channel)
+            connection_id = self.get_connection_id(channel)  # TODO: Note this is sepearte from address for override purposes
             address = self.get_address(channel)
             # If this channel is already connected to this plugin lets ignore
             if channel in self.channels:

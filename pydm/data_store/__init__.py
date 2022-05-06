@@ -1,7 +1,7 @@
-import enum
+from enum import Enum
 
 
-class DataKeys(str, enum.Enum):
+class DataKeys(str, Enum):
     """
     Enum class which holds the keys expected by the PyDMWidgets when used with
     a structured data to parse the data in search for the needed fields.
@@ -71,12 +71,11 @@ class DataKeys(str, enum.Enum):
         return introspection
 
 
-DEFAULT_INTROSPECTION = {k: v for k, v in DataKeys.__dict__.items()
-                         if isinstance(v, str) and not k.startswith('_')}
+DEFAULT_INTROSPECTION = {i.name: i.value for i in DataKeys}
 
 
 class _DataStore(object):
-
+    """ Singleton class responsible for holding the data and introspection tables for the channels. """
     def __init__(self):
         self._data = {}
         self._introspection = {}
@@ -106,7 +105,7 @@ class _DataStore(object):
         Returns
         -------
         data : dict
-            If no information is found this method returns and empty dictionary TODO: But it doesn't
+            If no information is found this method returns None
         """
         data = self._data.get(address, None)
         return data
@@ -121,9 +120,9 @@ class _DataStore(object):
         Returns
         -------
         data : dict
-            If no information is found this returns an empty dictionary
+            If no information is found this returns None
         introspection : dict
-            If no information is found this returns an empty dictionary
+            If no information is found this returns None
         """
         data = self.fetch(address)
         intro = self.introspect(address)

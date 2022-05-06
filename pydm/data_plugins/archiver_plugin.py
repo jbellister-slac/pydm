@@ -28,7 +28,6 @@ class Connection(PyDMConnection):
         self.data[DataKeys.CONNECTION] = False
         self.data[DataKeys.WRITE_ACCESS] = False
         self.data[DataKeys.VALUE] = None
-        #self.send_to_channel()
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished[QNetworkReply].connect(self.data_request_finished)
 
@@ -122,7 +121,6 @@ class Connection(PyDMConnection):
         """
         data = np.array(([point["secs"] for point in data_dict[0]["data"]],
                          [point["val"] for point in data_dict[0]["data"]]))
-        #self.new_value_signal[np.ndarray].emit(data)
         self.data[DataKeys.VALUE] = data
         self.send_to_channel()
 
@@ -144,7 +142,6 @@ class Connection(PyDMConnection):
             self._send_raw_data(data_dict)
             return
 
-        #self.new_value_signal[np.ndarray].emit(data)
         self.data[DataKeys.VALUE] = data
         self.send_to_channel()
 

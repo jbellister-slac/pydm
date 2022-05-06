@@ -108,25 +108,26 @@ class PyDMChannel(object):
         self._monitors = set()  # Convert to list of WeakMethod in the future
         self._busy = False
 
-        slots = {DataKeys.CONNECTION: connection_slot,
-                 DataKeys.VALUE: value_slot,
-                 DataKeys.SEVERITY: severity_slot,
-                 DataKeys.WRITE_ACCESS: write_access_slot,
-                 DataKeys.ENUM_STRINGS: enum_strings_slot,
-                 DataKeys.UNIT: unit_slot,
-                 DataKeys.PRECISION: prec_slot,
-                 DataKeys.UPPER_LIMIT:  upper_ctrl_limit_slot,
-                 DataKeys.LOWER_LIMIT: lower_ctrl_limit_slot}
+#        slots = {DataKeys.CONNECTION: connection_slot,
+#                 DataKeys.VALUE: value_slot,
+#                 DataKeys.SEVERITY: severity_slot,
+#                 DataKeys.WRITE_ACCESS: write_access_slot,
+#                 DataKeys.ENUM_STRINGS: enum_strings_slot,
+#                 DataKeys.UNIT: unit_slot,
+#                 DataKeys.PRECISION: prec_slot,
+#                 DataKeys.UPPER_LIMIT:  upper_ctrl_limit_slot,
+#                 DataKeys.LOWER_LIMIT: lower_ctrl_limit_slot}
 
         if callback:
             self.subscribe(callback)
 
-        if any([x is not None for x in slots.values()]):
-            default_cb = self._make_callback(slots)
-            self.subscribe(default_cb)
+#        if any([x is not None for x in slots.values()]):
+#            default_cb = self._make_callback(slots)
+#            self.subscribe(default_cb)
             
     # TODO: Can only use Slot() if this is defined on a QObject (not object
     def notified(self):
+        """ This is the slot which is invoked any time a data plugin emits the notify signal.  """
         if self._busy:
             return
         self._busy = True

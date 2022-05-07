@@ -6,10 +6,11 @@ import numpy as np
 from datetime import datetime
 from typing import Optional
 
+from pydm.data_store import DataKeys
+from pydm.data_plugins.plugin import PyDMPlugin, PyDMConnection
 from pydm.widgets.channel import PyDMChannel
 from qtpy.QtCore import Slot, QObject, QUrl
 from qtpy.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
-from pydm.data_plugins.plugin import PyDMPlugin, PyDMConnection
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,9 @@ class Connection(PyDMConnection):
         super().__init__(channel, address, protocol, parent)
         self.add_listener(channel)
         self.address = address
+        self.data[DataKeys.CONNECTION] = False
+        self.data[DataKeys.WRITE_ACCESS] = False
+        self.data[DataKeys.VALUE] = None
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished[QNetworkReply].connect(self.data_request_finished)
 
@@ -117,7 +121,8 @@ class Connection(PyDMConnection):
         """
         data = np.array(([point["secs"] for point in data_dict[0]["data"]],
                          [point["val"] for point in data_dict[0]["data"]]))
-        self.new_value_signal[np.ndarray].emit(data)
+        self.data[DataKeys.VALUE] = data
+        self.send_to_channel()
 
     def _send_optimized_data(self, data_dict: dict) -> None:
         """
@@ -137,7 +142,8 @@ class Connection(PyDMConnection):
             self._send_raw_data(data_dict)
             return
 
-        self.new_value_signal[np.ndarray].emit(data)
+        self.data[DataKeys.VALUE] = data
+        self.send_to_channel()
 
 
 class ArchiverPlugin(PyDMPlugin):

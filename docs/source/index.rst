@@ -48,6 +48,7 @@ as well as a straightforward python framework to build complex applications.
    :maxdepth: 1
    :caption: Developers Corner
 
+   development/migration.rst
    development/development.rst
    widgets/widget_rules/customizing.rst
    development/resources.rst

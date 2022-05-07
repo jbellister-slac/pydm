@@ -1,6 +1,9 @@
 import logging
 
 import pydm.data_plugins
+from ..data_store import DataStore, DataKeys
+from ..utilities import data_callback
+from qtpy.QtCore import Slot
 
 logger = logging.getLogger(__name__)
 
@@ -75,13 +78,16 @@ class PyDMChannel(object):
         Attach a signal here that emits a desired value to be sent
         through the plugin
 
+    callback : callable, optional
+        The function or method to be invoked when data changes for this channel
     """
     def __init__(self, address=None, connection_slot=None, value_slot=None,
                  severity_slot=None, write_access_slot=None,
                  enum_strings_slot=None, unit_slot=None, prec_slot=None,
                  upper_ctrl_limit_slot=None, lower_ctrl_limit_slot=None,
-                 value_signal=None):
+                 value_signal=None, callback=None):
         self._address = None
+        self._connection = ''
         self.address = address
 
         self.connection_slot = connection_slot
@@ -96,6 +102,42 @@ class PyDMChannel(object):
         self.lower_ctrl_limit_slot = lower_ctrl_limit_slot
 
         self.value_signal = value_signal
+
+        self._use_introspection = True
+        self._introspection = {}
+        self._monitors = set()  # Convert to list of WeakMethod in the future
+        self._busy = False
+
+        #        slots = {DataKeys.CONNECTION: connection_slot,
+        #                 DataKeys.VALUE: value_slot,
+        #                 DataKeys.SEVERITY: severity_slot,
+        #                 DataKeys.WRITE_ACCESS: write_access_slot,
+        #                 DataKeys.ENUM_STRINGS: enum_strings_slot,
+        #                 DataKeys.UNIT: unit_slot,
+        #                 DataKeys.PRECISION: prec_slot,
+        #                 DataKeys.UPPER_LIMIT:  upper_ctrl_limit_slot,
+        #                 DataKeys.LOWER_LIMIT: lower_ctrl_limit_slot}
+
+        if callback:
+            self.subscribe(callback)
+
+    #        if any([x is not None for x in slots.values()]):
+    #            default_cb = self._make_callback(slots)
+    #            self.subscribe(default_cb)
+
+    # TODO: Can only use Slot() if this is defined on a QObject (not object
+    def notified(self):
+        """ This is the slot which is invoked any time a data plugin emits the notify signal.  """
+        if self._busy:
+            return
+        self._busy = True
+        data, intro = self.get_with_introspection()
+        for mon in self._monitors:
+            try:
+                mon(data=data, introspection=intro)
+            except Exception as ex:
+                logger.exception("Error invoking callback for %r", self)
+        self._busy = False
 
     @property
     def address(self):
@@ -131,6 +173,43 @@ class PyDMChannel(object):
         except Exception as exc:
             logger.exception("Unable to remove connection "
                              "for %r", self)
+
+    def get_introspection(self):
+        if self._use_introspection:
+            return DataStore.introspect(self._address)
+        return self._introspection
+
+    def get_with_introspection(self):
+        print(f'Attempting to pull data out with the key: {self._address}')
+        data, intro = DataStore.fetch_with_introspection(self._address)
+        # In case of user-defined introspection for inner fields
+        if not self._use_introspection:
+            intro = self._introspection
+        return data, intro
+
+    def get(self):
+        data = DataStore.fetch(self._address)
+        return data
+
+    def subscribe(self, callback):
+        if callable(callback):
+            self._monitors.add(callback)
+        else:
+            logger.error('Callback for %r must be a callable.', self)
+
+    def unsubscribe(self, callback):
+        self._monitors.remove(callback)
+
+    def clear_subscriptions(self):
+        self._monitors = set()
+
+    def _make_callback(self, slots):
+        def cb(data=None, introspection=None, *args, **kwargs):
+            if data is None or introspection is None:
+                return
+            data_callback(self, data, introspection, slots)
+
+        return cb
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):

@@ -17,9 +17,11 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.7"]
+        pyqt-version: ['5.12.3']
 
     steps:
     - uses: actions/checkout@v3
@@ -33,7 +35,7 @@ jobs:
     - name: Install python packages
       shell: bash -el {0}
       run: |
-        mamba install flake8 pytest-xvfb $(cat requirements.txt dev-requirements.txt)
+        mamba install flake8 pytest-xvfb pyqt=${{ matrix.pyqt-version }} $(cat requirements.txt dev-requirements.txt)
     - name: Install packages for testing a pyqt app on ubuntu
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then

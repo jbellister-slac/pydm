@@ -33,9 +33,7 @@ jobs:
     - name: Install python packages
       shell: bash -el {0}
       run: |
-        mamba install flake8 pytest-xvfb
-        mamba install -r requirements.txt
-        mamba install -r dev-requirements.txt
+        mamba install flake8 pytest-xvfb $(cat requirements.txt dev-requirements.txt)
     - name: Install packages for testing a pyqt app on ubuntu
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then

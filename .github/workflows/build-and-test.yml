@@ -22,6 +22,8 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.7"]
         pyqt-version: ['5.12.3']
+    env:
+      DISPLAY: ':99.0'
 
     steps:
     - uses: actions/checkout@v3
@@ -39,7 +41,7 @@ jobs:
     - name: Install packages for testing a pyqt app on ubuntu
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
-          sudo apt-get install libxcb-xinerama0 pyqt5-dev-tools
+          sudo apt-get install xvfb libxcb-xinerama0 pyqt5-dev-tools
         fi
     - name: Lint with flake8
       shell: bash -el {0}

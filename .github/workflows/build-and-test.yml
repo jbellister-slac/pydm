@@ -45,6 +45,7 @@ jobs:
           mamba install flake8 pytest-xvfb pyqt=${{ matrix.pyqt-version }} $(cat requirements.txt dev-requirements.txt)
         fi
     - name: Install packages for testing a pyqt app on ubuntu
+      shell: bash -el {0}
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
           sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils 

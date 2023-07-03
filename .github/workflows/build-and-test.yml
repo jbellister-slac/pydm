@@ -5,7 +5,7 @@ name: CI Status
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "blah" ]
   pull_request:
     branches: [ "master" ]
   workflow_dispatch:

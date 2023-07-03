@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    if: ${{ github.repository == 'slaclab/pydm' }}
+    if: ${{ github.repository == 'jbellister-slac/pydm' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

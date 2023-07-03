@@ -31,18 +31,17 @@ jobs:
       uses: conda-incubator/setup-miniconda@v2
       with:
         python-version: ${{ matrix.python-version }}
-        mamba-version: "*"
         channels: conda-forge
         activate-environment: pydm-env
     - name: Install python packages
       shell: bash -el {0}
       run: |
         if [ "$RUNNER_OS" == "Windows" ]; then
-          mamba install flake8 pytest-xvfb pyqt=${{ matrix.pyqt-version }} 
-          mamba install --file requirements.txt 
-          mamba install --file windows-dev-requirements.txt
+          conda install flake8 pytest-xvfb pyqt=${{ matrix.pyqt-version }} 
+          conda install --file requirements.txt 
+          conda install --file windows-dev-requirements.txt
         else
-          mamba install flake8 pytest-xvfb pyqt=${{ matrix.pyqt-version }} $(cat requirements.txt dev-requirements.txt)
+          conda install flake8 pytest-xvfb pyqt=${{ matrix.pyqt-version }} $(cat requirements.txt dev-requirements.txt)
         fi
     - name: Install packages for testing a pyqt app on ubuntu
       shell: bash -el {0}

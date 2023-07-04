@@ -21,7 +21,7 @@ jobs:
       - name: Install python packages
         shell: bash -el {0}
         run: |
-          mamba install --file docs-requirements.txt
+          mamba install pydm $(cat docs-requirements.txt)
 
       - name: Build Docs
         shell: bash -l {0}

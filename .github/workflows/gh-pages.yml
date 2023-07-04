@@ -34,11 +34,11 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: built-docs
-          path: build/html
+          path: docs/build/html
 
 
 #      - name: Deploy to gh-pages
 #        uses: peaceiris/actions-gh-pages@v3
 #        with:
 #          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          publish_dir: build/html
+#          publish_dir: docs/build/html

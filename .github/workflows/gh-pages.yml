@@ -1,3 +1,5 @@
+# This workflow will publish a new version of the documentation to the gh-pages branch on all new commits to master
+
 name: Publish Documentation
 
 on:

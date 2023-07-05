@@ -1,5 +1,5 @@
-# This workflow will install Python dependencies, run tests and lint with Python 3.8
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# This workflow will install Python dependencies, lint with flake8, and run the test suite, for all combinations
+# of version operating systems and version numbers specified in the matrix
 
 name: CI Status
 

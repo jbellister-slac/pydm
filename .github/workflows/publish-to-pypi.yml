@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    if: ${{ github.repository == 'slaclab/pydm' }}
+    if: ${{ github.repository == 'jbellister-slac/pydm' }}
     name: Build new release
     runs-on: ubuntu-latest
 
@@ -38,7 +38,7 @@ jobs:
         retention-days: 1
 
   publish:
-    if: ${{ github.repository == 'slaclab/pydm' }}
+    if: ${{ github.repository == 'jbellister-slac/pydm' }}
     name: Publish release to PyPI
     runs-on: ubuntu-latest
     permissions:
@@ -52,3 +52,5 @@ jobs:
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
